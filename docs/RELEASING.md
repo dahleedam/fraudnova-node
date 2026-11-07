@@ -8,7 +8,7 @@ These are your steps to publish the package. The code, tests and docs are alread
 2. Push `main`:
 
    ```bash
-   git remote add origin git@github.com:dahleedam/fraudnova-node.git && git push -u origin main
+   git remote add origin https://github.com/dahleedam/fraudnova-node.git && git push -u origin main
    ```
 
    Open https://github.com/dahleedam/fraudnova-node/actions and wait for the **CI** run to go green on Node 18, 20 and 22. Do not tag until it is green.
