@@ -1,5 +1,14 @@
 export { VERSION } from "./version.js";
 export {
+  BATCH_MAX,
+  DEFAULT_BASE_URL,
+  FraudNova,
+  type FraudNovaOptions,
+  type IpCheckOptions,
+  type PhoneCheckOptions,
+} from "./client.js";
+export type { FetchLike } from "./transport.js";
+export {
   AccountSuspendedError,
   ApiError,
   AuthenticationError,
