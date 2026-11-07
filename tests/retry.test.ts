@@ -35,6 +35,29 @@ describe("RetryPolicy", () => {
     expect(() => new RetryPolicy({ maxRetryAfter: -1 })).toThrow(InvalidArgumentError);
   });
 
+  test("maxAttempts must be a finite integer", () => {
+    for (const maxAttempts of [NaN, 2.5, Infinity]) {
+      expect(() => new RetryPolicy({ maxAttempts })).toThrow(
+        "maxAttempts must be an integer of at least 1.",
+      );
+    }
+  });
+
+  test("maxRetryAfter must be finite and not negative", () => {
+    for (const maxRetryAfter of [NaN, Infinity, -1]) {
+      expect(() => new RetryPolicy({ maxRetryAfter })).toThrow(
+        "maxRetryAfter must be a finite number that is not negative.",
+      );
+    }
+  });
+
+  test("delay schedules must hold finite, non-negative numbers", () => {
+    expect(() => new RetryPolicy({ concurrencyDelays: [1, NaN] })).toThrow(/concurrencyDelays/);
+    expect(() => new RetryPolicy({ rateLimitDelays: [5, -1] })).toThrow(/rateLimitDelays/);
+    expect(() => new RetryPolicy({ rateLimitDelays: [NaN] })).toThrow(InvalidArgumentError);
+    expect(() => new RetryPolicy({ concurrencyDelays: [-1] })).toThrow(InvalidArgumentError);
+  });
+
   test("delayFor uses the schedules", () => {
     const policy = new RetryPolicy();
     expect(policy.delayFor(concurrency(), 1)).toBe(1);

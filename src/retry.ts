@@ -39,9 +39,24 @@ export class RetryPolicy {
     this.honourRetryAfter = options.honourRetryAfter ?? true;
     this.maxRetryAfter = options.maxRetryAfter ?? 60;
     this.#sleeper = options.sleep ?? defaultSleep;
-    if (this.maxAttempts < 1) throw new InvalidArgumentError("maxAttempts must be at least 1.");
-    if (this.maxRetryAfter < 0)
-      throw new InvalidArgumentError("maxRetryAfter must not be negative.");
+    if (!Number.isInteger(this.maxAttempts) || this.maxAttempts < 1) {
+      throw new InvalidArgumentError("maxAttempts must be an integer of at least 1.");
+    }
+    if (!Number.isFinite(this.maxRetryAfter) || this.maxRetryAfter < 0) {
+      throw new InvalidArgumentError("maxRetryAfter must be a finite number that is not negative.");
+    }
+    for (const [name, delays] of [
+      ["concurrencyDelays", this.concurrencyDelays],
+      ["rateLimitDelays", this.rateLimitDelays],
+    ] as const) {
+      if (
+        !delays.every((delay) => typeof delay === "number" && Number.isFinite(delay) && delay >= 0)
+      ) {
+        throw new InvalidArgumentError(
+          `${name} must contain only finite numbers that are not negative.`,
+        );
+      }
+    }
   }
 
   /** Seconds to wait before retrying after `attempt` (1-based) failed, or null to stop. */

@@ -47,6 +47,9 @@ describe("FraudNova", () => {
     expect(() => new FraudNova(KEY, { fetch, baseUrl: "ftp://x" })).toThrow(InvalidArgumentError);
     expect(() => new FraudNova(KEY, { fetch, timeout: 0 })).toThrow(InvalidArgumentError);
     expect(() => new FraudNova(KEY, { fetch, timeout: NaN })).toThrow(InvalidArgumentError);
+    expect(() => new FraudNova(KEY, { fetch, timeout: 2_147_483_648 })).toThrow(
+      InvalidArgumentError,
+    );
     expect(new FraudNova(KEY, { fetch, baseUrl: "HTTPS://api.test/v1/" }).baseUrl).toBe(
       "HTTPS://api.test/v1",
     );

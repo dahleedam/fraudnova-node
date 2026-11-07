@@ -29,6 +29,8 @@ These are your steps to publish the package. The code, tests and docs are alread
    npm publish --access public
    ```
 
+   npm 11 may stage a first publish for approval in the browser and print a success line regardless, so the package is not live until you approve it. This is why the `?write=true` curl check in step 6 is mandatory after a manual publish too.
+
    Then add the trusted publisher as above and let the workflow publish every release from 1.0.1 on. In that case still push the `v1.0.0` tag in step 5 to mark the release. Its publish job fails because 1.0.0 is already on npm, which is expected, and the GitHub release job is skipped with it, so create the 1.0.0 release by hand under **Releases → Draft a new release** (choose the `v1.0.0` tag and click **Generate release notes**).
 5. Tag the release and push the tag:
 

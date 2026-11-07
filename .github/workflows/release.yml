@@ -37,7 +37,7 @@ jobs:
         run: test "v$(node -p "require('./package.json').version")" = "${GITHUB_REF_NAME}"
 
       # Trusted publishing needs npm 11.5 or later.
-      - run: npm install -g npm@latest
+      - run: npm install -g npm@^11.5.1
       - run: npm ci
       - run: npm run lint
       - run: npm run typecheck

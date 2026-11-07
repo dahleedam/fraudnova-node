@@ -46,7 +46,7 @@ export class Transport {
   constructor(options: TransportOptions) {
     if (!/^[\x21-\x7e]+$/.test(options.apiKey)) {
       throw new InvalidArgumentError(
-        "api_key must contain only printable ASCII characters, without whitespace.",
+        "apiKey must contain only printable ASCII characters, without whitespace.",
       );
     }
     let fetchImpl: FetchLike | null = options.fetch ?? null;

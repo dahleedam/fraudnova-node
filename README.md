@@ -12,6 +12,7 @@
 - Node.js 18 or later
 - No runtime dependencies: the client uses the built-in `fetch`
 - ESM and CommonJS are both supported, and TypeScript types are included
+- Server-side only: the client sends your API key, so never use it in browser code. Browsers are not supported.
 
 ## Installation
 
@@ -86,7 +87,7 @@ console.log("Credits left:", batch.creditsRemaining);
 
 `checkIps()` takes the same options as `checkIp()`, and `checkPhones()` takes one `country` hint for the whole batch. A `BatchResult` is iterable with `for...of`, has a `length`, and keeps every item in `items`; each `BatchItem` has `subject`, `success`, `result` (an `IpResult`, `EmailResult` or `PhoneResult`, or `null` on failure) and `error`. `hasFailures()` tells you whether any item failed.
 
-Batches are split into requests of 100. When a request reports zero credits remaining, the client stops and marks the remaining items `insufficient_credits` instead of sending a request that would fail. Any other error on a later request (a 429 with no retry policy or with the retries used up, a 503, or a `TransportError`) is thrown, and the results of the earlier requests are discarded even though they were billed. If you need control over each request, slice the array to 100 yourself:
+Batches are split into requests of 100. When a request reports zero credits remaining, the client stops and marks the remaining items `insufficient_credits` instead of sending a request that would fail. Any other error on a later request (a 429 with no retry policy or with the retries used up, a 503, or a `TransportError`) is thrown, and the results of the earlier requests are discarded even though they were billed. A large array is sent as sequential requests of 100, so 10,000 items means 100 requests; use a `RetryPolicy` for large batches, because a 429 partway through without retries discards the earlier, already-billed results. If you need control over each request, slice the array to 100 yourself:
 
 ```js
 import { BATCH_MAX } from "@fraudnova/sdk";
@@ -204,6 +205,8 @@ try {
 | `TransportError`           | none                   | The request failed before a response arrived, for example a timeout or DNS error. The original error is `cause`.                                                                                                              |
 | `InvalidArgumentError`     | none                   | A value was empty or out of range; no request was sent.                                                                                                                                                                       |
 
+`TransportError.cause` is the original error from `fetch` and is not masked, so avoid logging it verbatim if your fetch wrapper could echo request headers.
+
 ## Retries
 
 The client does not retry by default. To retry HTTP 429 responses, pass a `RetryPolicy`:
@@ -242,7 +245,7 @@ const client = new FraudNova("fn_your_api_key", {
 });
 ```
 
-The `fetch` option takes any function with the signature `(url: string, init: RequestInit) => Promise<Response>` (the `FetchLike` type). The client still applies its own `timeout` to every call. Use `baseUrl` to point the client somewhere other than `https://fraudnova.com/api/v1` (`DEFAULT_BASE_URL`).
+The `fetch` option takes any function with the signature `(url: string, init: RequestInit) => Promise<Response>` (the `FetchLike` type). The client still applies its own `timeout` to every call. The SDK sets its own `signal` for the timeout (a caller-supplied `AbortSignal` is not supported in 1.0), so a custom `fetch` must honour `init.signal` for the timeout to work. Use `baseUrl` to point the client somewhere other than `https://fraudnova.com/api/v1` (`DEFAULT_BASE_URL`).
 
 ## Testing
 

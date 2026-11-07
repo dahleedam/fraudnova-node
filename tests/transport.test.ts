@@ -103,7 +103,7 @@ describe("Transport", () => {
       expect(() => transport(fetch, { apiKey })).toThrow(InvalidArgumentError);
     }
     expect(() => transport(fetch, { apiKey: "fn_ bad" })).toThrow(
-      "api_key must contain only printable ASCII characters, without whitespace.",
+      "apiKey must contain only printable ASCII characters, without whitespace.",
     );
   });
 
@@ -246,6 +246,22 @@ describe("Transport", () => {
     );
     expect(calls).toHaveLength(3);
     expect(sleeps).toHaveLength(2);
+  });
+
+  test("a bounded policy stops even when every 429 sends Retry-After", async () => {
+    const { policy, sleeps } = recorder(2);
+    const calls: string[] = [];
+    const fetch: FetchLike = (url) => {
+      calls.push(url);
+      return Promise.resolve(
+        jsonResponse(429, { success: false, message: CONCURRENCY }, { "Retry-After": "1" }),
+      );
+    };
+    await expect(transport(fetch, { retry: policy }).get("/check")).rejects.toBeInstanceOf(
+      RateLimitError,
+    );
+    expect(calls).toHaveLength(2);
+    expect(sleeps).toEqual([1]);
   });
 
   test("does not retry without a policy", async () => {

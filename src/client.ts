@@ -100,8 +100,15 @@ export class FraudNova {
       throw new InvalidArgumentError("baseUrl must start with http:// or https://");
     }
     const timeout = options.timeout ?? DEFAULT_TIMEOUT;
-    if (typeof timeout !== "number" || !Number.isFinite(timeout) || timeout <= 0) {
-      throw new InvalidArgumentError("timeout must be a positive number of milliseconds");
+    if (
+      typeof timeout !== "number" ||
+      !Number.isFinite(timeout) ||
+      timeout <= 0 ||
+      timeout > 2_147_483_647
+    ) {
+      throw new InvalidArgumentError(
+        "timeout must be a positive number of milliseconds (at most 2147483647)",
+      );
     }
     this.#apiKey = apiKey.trim();
     this.#transport = new Transport({
