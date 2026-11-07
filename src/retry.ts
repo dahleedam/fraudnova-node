@@ -16,7 +16,7 @@ const ASCTIME = new RegExp(`^${SHORT_DAY} ${MONTH} (?: [0-9]|[0-9]{2}) ${TIME} [
  * Accepts delta-seconds (digits only) or an RFC 7231 HTTP-date in one of its three
  * forms: IMF-fixdate (`Sun, 06 Nov 1994 08:49:37 GMT`), RFC 850
  * (`Sunday, 06-Nov-94 08:49:37 GMT`) or asctime (`Sun Nov  6 08:49:37 1994`, read as GMT).
- * Anything else, including a date that does not exist, returns null.
+ * Anything else, or a day or time that `Date.parse` rejects (such as day 99), returns null.
  */
 export function parseRetryAfter(value: string | null, now: Date = new Date()): number | null {
   if (value === null) return null;
