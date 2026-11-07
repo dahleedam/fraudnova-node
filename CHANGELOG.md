@@ -5,6 +5,18 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [1.0.2] - 2026-11-07
+
+### Changed
+
+- `parseRetryAfter()` now accepts an HTTP-date only in the RFC 7231 shapes (IMF-fixdate, RFC 850 and asctime, with asctime read as GMT where 1.0.1 read it as local time); other non-numeric values such as `1.5` or `-1` return `null` instead of `0`
+- README: compare `error.name` instead of `instanceof` when both the ESM and CommonJS builds are loaded in one process
+- CI and release workflows use `actions/checkout@v5` and `actions/setup-node@v5`
+
+### Fixed
+
+- `IpResult.fromData()`, `EmailResult.fromData()` and `PhoneResult.fromData()` treat non-object data as an empty object instead of throwing
+
 ## [1.0.1] - 2026-11-07
 
 ### Changed
@@ -22,6 +34,7 @@ All notable changes to this project are documented in this file. The format foll
 - Batch helpers that chunk requests by 100 items
 - Bring-your-own `fetch`
 
-[Unreleased]: https://github.com/dahleedam/fraudnova-node/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/dahleedam/fraudnova-node/compare/v1.0.2...HEAD
+[1.0.2]: https://github.com/dahleedam/fraudnova-node/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/dahleedam/fraudnova-node/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/dahleedam/fraudnova-node/releases/tag/v1.0.0
