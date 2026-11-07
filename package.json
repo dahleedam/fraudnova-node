@@ -1,0 +1,73 @@
+{
+  "name": "@fraudnova/sdk",
+  "version": "1.0.0",
+  "description": "Official Node.js client for the FraudNova fraud-detection API (IP, email and phone checks)",
+  "license": "MIT",
+  "author": {
+    "name": "FraudNova",
+    "email": "support@fraudnova.com"
+  },
+  "homepage": "https://fraudnova.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dahleedam/fraudnova-node.git"
+  },
+  "bugs": "https://github.com/dahleedam/fraudnova-node/issues",
+  "keywords": [
+    "fraud",
+    "fraud-detection",
+    "ip",
+    "proxy",
+    "vpn",
+    "email-validation",
+    "phone-validation",
+    "api-client",
+    "typescript"
+  ],
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint . && prettier --check .",
+    "format": "prettier --write .",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run lint && npm run typecheck && npm test && npm run build"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "@types/node": "^22.20.5",
+    "eslint": "^9.39.5",
+    "prettier": "^3.9.10",
+    "tsup": "^8.5.1",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.72.1",
+    "vitest": "^3.2.7"
+  }
+}
