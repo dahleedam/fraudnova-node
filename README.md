@@ -298,6 +298,8 @@ const result: IpResult = await client.checkIp("8.8.8.8", options);
 
 The package also exports `VERSION` (the SDK version, sent in the `User-Agent` header), `BATCH_MAX`, `DEFAULT_BASE_URL`, and three small helpers: `maskApiKey()` (a shortened key such as `fn_…abcd` that is safe to log), `parseRetryAfter()` and `parseDateInfo()`.
 
+If both the ESM and CommonJS builds of the package are loaded in one process (for example a CommonJS dependency and an ESM application each importing `@fraudnova/sdk`), each build has its own copies of the error classes, so an error thrown by one build is not `instanceof` the other build's class. In that situation, compare `error.name` (for example `"RateLimitError"`) instead of using `instanceof` across module systems.
+
 ## Credits and limits
 
 One check costs one credit, whichever type it is. Failed checks are refunded. You get free trial credits when you verify your email address, and you buy more as credit packs, with no subscription. A batch costs one credit per successful item.
