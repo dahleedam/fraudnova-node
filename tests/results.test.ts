@@ -353,3 +353,41 @@ describe("mapping isolation", () => {
     expectIsolated((raw) => PhoneResult.fromData(raw), phoneBools);
   });
 });
+
+describe("non-object data", () => {
+  it("treats null as an empty IpResult", () => {
+    const r = IpResult.fromData(null as never);
+    expect(r.raw).toEqual({});
+    expect(r.fraudScore).toBe(0);
+    expect(r.proxy).toBeNull();
+    expect(r.countryCode).toBeNull();
+    expect(r.asn).toBeNull();
+  });
+
+  it("treats undefined as an empty EmailResult", () => {
+    const r = EmailResult.fromData(undefined as never);
+    expect(r.raw).toEqual({});
+    expect(r.fraudScore).toBe(0);
+    expect(r.valid).toBeNull();
+    expect(r.deliverability).toBeNull();
+    expect(r.firstSeen).toBeNull();
+  });
+
+  it("treats a string as an empty PhoneResult", () => {
+    const r = PhoneResult.fromData("x" as never);
+    expect(r.raw).toEqual({});
+    expect(r.fraudScore).toBe(0);
+    expect(r.voip).toBeNull();
+    expect(r.carrier).toBeNull();
+    expect(r.dialingCode).toBeNull();
+  });
+
+  it("treats an array as an empty IpResult", () => {
+    const r = IpResult.fromData([] as never);
+    expect(r.raw).toEqual({});
+    expect(Array.isArray(r.raw)).toBe(false);
+    expect(r.fraudScore).toBe(0);
+    expect(r.vpn).toBeNull();
+    expect(r.city).toBeNull();
+  });
+});

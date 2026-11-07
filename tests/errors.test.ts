@@ -38,6 +38,36 @@ describe("errors", () => {
     }
   });
 
+  test.each([
+    ["AuthenticationError", AuthenticationError, 401],
+    ["InsufficientCreditsError", InsufficientCreditsError, 402],
+    ["AccountSuspendedError", AccountSuspendedError, 403],
+    ["ValidationError", ValidationError, 422],
+    ["UnexpectedResponseError", UnexpectedResponseError, 200],
+  ] as const)(
+    "%s keeps its name and is an ApiError when constructed directly",
+    (name, cls, status) => {
+      const error = new cls(status, "a");
+      expect(error).toBeInstanceOf(cls);
+      expect(error).toBeInstanceOf(ApiError);
+      expect(error).toBeInstanceOf(FraudNovaError);
+      expect(error.name).toBe(name);
+    },
+  );
+
+  // UnexpectedResponseError is raised by the client for a malformed 2xx body, never by fromResponse.
+  test.each([
+    ["AuthenticationError", AuthenticationError, 401],
+    ["InsufficientCreditsError", InsufficientCreditsError, 402],
+    ["AccountSuspendedError", AccountSuspendedError, 403],
+    ["ValidationError", ValidationError, 422],
+  ] as const)("%s keeps its name and is an ApiError via fromResponse", (name, cls, status) => {
+    const error = ApiError.fromResponse(status, envelope);
+    expect(error).toBeInstanceOf(cls);
+    expect(error).toBeInstanceOf(ApiError);
+    expect(error.name).toBe(name);
+  });
+
   test("transport error keeps its cause", () => {
     const cause = new Error("boom");
     expect(new TransportError("x", { cause }).cause).toBe(cause);

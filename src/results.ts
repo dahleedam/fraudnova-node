@@ -31,6 +31,11 @@ function isPlainObject(v: unknown): v is Raw {
   return typeof v === "object" && v !== null && !Array.isArray(v);
 }
 
+/** Treat anything that is not a plain object as `{}`, so a malformed `data` yields defaults. */
+function asRaw(data: unknown): Raw {
+  return isPlainObject(data) ? data : {};
+}
+
 export interface DateInfo {
   human: string | null;
   timestamp: number | null;
@@ -137,7 +142,7 @@ export class IpResult extends FlaggableResult {
   }
 
   static fromData(data: Raw, creditsRemaining: number | null = null): IpResult {
-    return new IpResult(data, creditsRemaining);
+    return new IpResult(asRaw(data), creditsRemaining);
   }
 
   protected defaultFlagOn(): readonly string[] {
@@ -200,7 +205,7 @@ export class EmailResult extends FlaggableResult {
   }
 
   static fromData(data: Raw, creditsRemaining: number | null = null): EmailResult {
-    return new EmailResult(data, creditsRemaining);
+    return new EmailResult(asRaw(data), creditsRemaining);
   }
 
   protected defaultFlagOn(): readonly string[] {
@@ -259,7 +264,7 @@ export class PhoneResult extends FlaggableResult {
   }
 
   static fromData(data: Raw, creditsRemaining: number | null = null): PhoneResult {
-    return new PhoneResult(data, creditsRemaining);
+    return new PhoneResult(asRaw(data), creditsRemaining);
   }
 
   protected defaultFlagOn(): readonly string[] {
