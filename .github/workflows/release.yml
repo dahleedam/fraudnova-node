@@ -1,0 +1,57 @@
+# Publishes @fraudnova/sdk to npm when a version tag (for example v1.0.0) is pushed.
+#
+# Authentication uses npm trusted publishing: GitHub's OIDC token is exchanged for a
+# short-lived publish credential, so no npm token is stored in this repository.
+#
+# One-time setup on npmjs.com (see docs/RELEASING.md):
+#   Account -> Packages -> Trusted publishing (or the package's Settings -> Trusted publisher)
+#     Publisher:         GitHub Actions
+#     Owner:             dahleedam
+#     Repository:        fraudnova-node
+#     Workflow filename: release.yml
+#     Environment:       (leave blank)
+
+name: Release
+
+on:
+  push:
+    tags: ["v*.*.*"]
+
+jobs:
+  publish:
+    name: Publish to npm
+    runs-on: ubuntu-24.04
+    permissions:
+      # Needed to mint the OIDC token for trusted publishing and provenance.
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+
+      - name: Check the tag matches package.json
+        run: test "v$(node -p "require('./package.json').version")" = "${GITHUB_REF_NAME}"
+
+      # Trusted publishing needs npm 11.5 or later.
+      - run: npm install -g npm@latest
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run build
+      - run: npm test
+      - run: npm publish --provenance --access public
+
+  github-release:
+    name: GitHub release
+    needs: publish
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
