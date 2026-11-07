@@ -27,6 +27,38 @@ describe("parseRetryAfter", () => {
     expect(parseRetryAfter("", now)).toBeNull();
     expect(parseRetryAfter(null, now)).toBeNull();
   });
+
+  test("rejects values that are neither delta-seconds nor an HTTP-date", () => {
+    const now = new Date("2026-11-07T12:00:00Z");
+    expect(parseRetryAfter("1.5", now)).toBeNull();
+    expect(parseRetryAfter("-1", now)).toBeNull();
+    expect(parseRetryAfter("soon", now)).toBeNull();
+    expect(parseRetryAfter("  ", now)).toBeNull();
+    expect(parseRetryAfter("2030-01-01T00:00:00Z", now)).toBeNull();
+    expect(parseRetryAfter("Sun, 99 Nov 1994 08:49:37 GMT", now)).toBeNull();
+  });
+
+  test("keeps delta-seconds behaviour", () => {
+    expect(parseRetryAfter("120", new Date("2026-11-07T12:00:00Z"))).toBe(120);
+  });
+
+  test("accepts an IMF-fixdate", () => {
+    const now = new Date("2026-11-07T12:00:00Z");
+    expect(parseRetryAfter("Sat, 07 Nov 2026 12:01:30 GMT", now)).toBe(90);
+    expect(parseRetryAfter("Sat, 07 Nov 2026 11:58:30 GMT", now)).toBe(0);
+    expect(parseRetryAfter("  sat, 07 nov 2026 12:01:30 gmt ", now)).toBe(90);
+  });
+
+  test("accepts the obsolete RFC 850 form", () => {
+    const now = new Date("2026-11-07T12:00:00Z");
+    expect(parseRetryAfter("Saturday, 07-Nov-26 12:01:00 GMT", now)).toBe(60);
+  });
+
+  test("accepts the obsolete asctime form as GMT", () => {
+    const now = new Date("2026-11-07T12:00:00Z");
+    expect(parseRetryAfter("Sat Nov  7 12:02:00 2026", now)).toBe(120);
+    expect(parseRetryAfter("Sat Dec 12 12:00:00 2026", new Date("2026-12-12T11:59:00Z"))).toBe(60);
+  });
 });
 
 describe("RetryPolicy", () => {

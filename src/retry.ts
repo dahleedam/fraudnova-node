@@ -1,12 +1,32 @@
 import { InvalidArgumentError, type RateLimitError } from "./errors.js";
 
-/** Parse a Retry-After header (delta-seconds or HTTP-date) into whole seconds. */
+const MONTH = "(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)";
+const SHORT_DAY = "(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)";
+const LONG_DAY = "(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)";
+const TIME = "[0-9]{2}:[0-9]{2}:[0-9]{2}";
+
+// RFC 7231 HTTP-date: IMF-fixdate, then the obsolete RFC 850 and asctime forms.
+const IMF_FIXDATE = new RegExp(`^${SHORT_DAY}, [0-9]{2} ${MONTH} [0-9]{4} ${TIME} GMT$`, "i");
+const RFC_850 = new RegExp(`^${LONG_DAY}, [0-9]{2}-${MONTH}-[0-9]{2} ${TIME} GMT$`, "i");
+const ASCTIME = new RegExp(`^${SHORT_DAY} ${MONTH} (?: [0-9]|[0-9]{2}) ${TIME} [0-9]{4}$`, "i");
+
+/**
+ * Parse a Retry-After header into whole seconds.
+ *
+ * Accepts delta-seconds (digits only) or an RFC 7231 HTTP-date in one of its three
+ * forms: IMF-fixdate (`Sun, 06 Nov 1994 08:49:37 GMT`), RFC 850
+ * (`Sunday, 06-Nov-94 08:49:37 GMT`) or asctime (`Sun Nov  6 08:49:37 1994`, read as GMT).
+ * Anything else, including a date that does not exist, returns null.
+ */
 export function parseRetryAfter(value: string | null, now: Date = new Date()): number | null {
   if (value === null) return null;
   const text = value.trim();
   if (text === "") return null;
   if (/^[0-9]+$/.test(text)) return Number.parseInt(text, 10);
-  const when = Date.parse(text);
+  let when: number;
+  if (IMF_FIXDATE.test(text) || RFC_850.test(text)) when = Date.parse(text);
+  else if (ASCTIME.test(text)) when = Date.parse(`${text} GMT`);
+  else return null;
   if (Number.isNaN(when)) return null;
   return Math.max(0, Math.ceil((when - now.getTime()) / 1000));
 }
