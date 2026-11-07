@@ -125,7 +125,7 @@ describe("errors", () => {
   });
 
   test("a JSON 401 without success or message is a plain ApiError", () => {
-    const error = ApiError.fromResponse(401, JSON.stringify({ detail: "nope" }));
+    const error = ApiError.fromResponse(401, `  ${JSON.stringify({ detail: "nope" })}\n`);
     expect(error).not.toBeInstanceOf(AuthenticationError);
     expect(error.name).toBe("ApiError");
     expect(error.statusCode).toBe(401);

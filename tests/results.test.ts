@@ -289,3 +289,67 @@ describe("BatchResult", () => {
     expect(b.creditsRemaining).toBe(0);
   });
 });
+
+type BoolTable = Array<[string, string]>;
+
+const ipBools: BoolTable = [
+  ["proxy", "proxy"],
+  ["vpn", "vpn"],
+  ["tor", "tor"],
+  ["active_vpn", "activeVpn"],
+  ["active_tor", "activeTor"],
+  ["recent_abuse", "recentAbuse"],
+  ["bot_status", "botStatus"],
+];
+
+const emailBools: BoolTable = [
+  ["valid", "valid"],
+  ["disposable", "disposable"],
+  ["catch_all", "catchAll"],
+  ["generic", "generic"],
+  ["common", "common"],
+  ["dns_valid", "dnsValid"],
+  ["honeypot", "honeypot"],
+  ["frequent_complainer", "frequentComplainer"],
+  ["suspect", "suspect"],
+  ["recent_abuse", "recentAbuse"],
+  ["leaked", "leaked"],
+  ["risky_tld", "riskyTld"],
+  ["spf_record", "spfRecord"],
+  ["dmarc_record", "dmarcRecord"],
+];
+
+const phoneBools: BoolTable = [
+  ["valid", "valid"],
+  ["recent_abuse", "recentAbuse"],
+  ["VOIP", "voip"],
+  ["prepaid", "prepaid"],
+  ["risky", "risky"],
+  ["active", "active"],
+  ["do_not_call", "doNotCall"],
+  ["leaked", "leaked"],
+  ["spammer", "spammer"],
+];
+
+function expectIsolated(build: (raw: Record<string, unknown>) => object, table: BoolTable): void {
+  for (const [rawKey, field] of table) {
+    const result = build({ [rawKey]: true }) as Record<string, unknown>;
+    for (const [, other] of table) {
+      expect(result[other], `${rawKey} -> ${other}`).toBe(other === field ? true : null);
+    }
+  }
+}
+
+describe("mapping isolation", () => {
+  it("maps each IpResult boolean key to exactly one field", () => {
+    expectIsolated((raw) => IpResult.fromData(raw), ipBools);
+  });
+
+  it("maps each EmailResult boolean key to exactly one field", () => {
+    expectIsolated((raw) => EmailResult.fromData(raw), emailBools);
+  });
+
+  it("maps each PhoneResult boolean key to exactly one field", () => {
+    expectIsolated((raw) => PhoneResult.fromData(raw), phoneBools);
+  });
+});
