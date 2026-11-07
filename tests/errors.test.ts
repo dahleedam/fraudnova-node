@@ -124,6 +124,15 @@ describe("errors", () => {
     expect(error.apiMessage).toBe("HTTP 500");
   });
 
+  test("a JSON 401 without success or message is a plain ApiError", () => {
+    const error = ApiError.fromResponse(401, JSON.stringify({ detail: "nope" }));
+    expect(error).not.toBeInstanceOf(AuthenticationError);
+    expect(error.name).toBe("ApiError");
+    expect(error.statusCode).toBe(401);
+    expect(error.apiMessage).toBe('{"detail":"nope"}');
+    expect(error.body).toEqual({ detail: "nope" });
+  });
+
   test("maskApiKey", () => {
     expect(maskApiKey("fn_live_abcdefghijkl")).toBe("fn_…ijkl");
     expect(maskApiKey("fn_short")).toBe("fn_…");

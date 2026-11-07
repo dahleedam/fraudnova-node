@@ -191,6 +191,32 @@ describe("FraudNova", () => {
     expect(batch.creditsRemaining).toBe(0);
   });
 
+  test("zero credits on the last chunk adds no phantom items", async () => {
+    const ips = Array.from({ length: 150 }, (_, i) => `10.0.0.${i}`);
+    const { client, calls } = make(ipBatch(ips.slice(0, 100), 20), ipBatch(ips.slice(100), 0));
+    const batch = await client.checkIps(ips);
+    expect(calls.length).toBe(2);
+    expect(batch.length).toBe(150);
+    expect(batch.items.map((i) => i.subject)).toEqual(ips);
+    expect(batch.items.every((i) => i.success && i.error === null)).toBe(true);
+    expect(batch.creditsRemaining).toBe(0);
+  });
+
+  test("a non-last chunk without credits_remaining keeps going", async () => {
+    const ips = Array.from({ length: 150 }, (_, i) => `10.0.0.${i}`);
+    const first = jsonResponse(200, {
+      success: true,
+      results: ips.slice(0, 100).map((ip) => ({ ip, success: true, data: { fraud_score: 5 } })),
+    });
+    const { client, calls } = make(first, ipBatch(ips.slice(100), 17));
+    const batch = await client.checkIps(ips);
+    expect(calls.length).toBe(2);
+    expect((bodyOf(calls[1].init).ips as unknown[]).length).toBe(50);
+    expect(batch.length).toBe(150);
+    expect(batch.items.every((i) => i.success)).toBe(true);
+    expect(batch.creditsRemaining).toBe(17);
+  });
+
   test("an error on a later chunk propagates", async () => {
     const ips = Array.from({ length: 150 }, (_, i) => `10.0.0.${i}`);
     const { client, calls } = make(

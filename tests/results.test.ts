@@ -49,11 +49,20 @@ describe("IpResult", () => {
     expect(r.fraudScore).toBe(88);
     expect(r.proxy).toBe(true);
     expect(r.vpn).toBe(false);
+    expect(r.tor).toBe(false);
+    expect(r.activeVpn).toBe(false);
+    expect(r.activeTor).toBe(false);
     expect(r.recentAbuse).toBe(true);
+    expect(r.botStatus).toBe(false);
     expect(r.countryCode).toBe("US");
+    expect(r.region).toBe("Texas");
+    expect(r.city).toBe("Dallas");
     expect(r.isp).toBe("Example ISP");
+    expect(r.organization).toBe("Example Org");
     expect(r.asn).toBe(64500);
     expect(r.operatingSystem).toBe("Windows 10");
+    expect(r.browser).toBe("Chrome 120");
+    expect(r.deviceBrand).toBe("Dell");
     expect(r.deviceModel).toBe("XPS");
     expect(r.creditsRemaining).toBe(42);
     expect(r.raw).toBe(ipFixture);
@@ -99,6 +108,70 @@ describe("IpResult", () => {
 });
 
 describe("EmailResult", () => {
+  it("maps every field", () => {
+    const fixture = {
+      fraud_score: 61,
+      valid: true,
+      disposable: false,
+      catch_all: true,
+      generic: false,
+      common: true,
+      dns_valid: false,
+      honeypot: true,
+      frequent_complainer: false,
+      suspect: true,
+      recent_abuse: false,
+      leaked: true,
+      risky_tld: false,
+      spf_record: true,
+      dmarc_record: false,
+      smtp_score: 3,
+      overall_score: 4,
+      deliverability: "medium",
+      spam_trap_score: "low",
+      result_type: "mailbox",
+      sanitized_email: "jane.doe@example.org",
+      first_seen: { human: "2 years ago", timestamp: 1700000001, iso: "2023-11-14T22:13:21+00:00" },
+      domain_age: { human: "9 years ago", timestamp: 1500000002, iso: "2017-07-14T02:40:02+00:00" },
+      extra: "kept",
+    };
+    const r = EmailResult.fromData(fixture, 17);
+    expect(r.fraudScore).toBe(61);
+    expect(r.valid).toBe(true);
+    expect(r.disposable).toBe(false);
+    expect(r.catchAll).toBe(true);
+    expect(r.generic).toBe(false);
+    expect(r.common).toBe(true);
+    expect(r.dnsValid).toBe(false);
+    expect(r.honeypot).toBe(true);
+    expect(r.frequentComplainer).toBe(false);
+    expect(r.suspect).toBe(true);
+    expect(r.recentAbuse).toBe(false);
+    expect(r.leaked).toBe(true);
+    expect(r.riskyTld).toBe(false);
+    expect(r.spfRecord).toBe(true);
+    expect(r.dmarcRecord).toBe(false);
+    expect(r.smtpScore).toBe(3);
+    expect(r.overallScore).toBe(4);
+    expect(r.deliverability).toBe("medium");
+    expect(r.spamTrapScore).toBe("low");
+    expect(r.resultType).toBe("mailbox");
+    expect(r.sanitizedEmail).toBe("jane.doe@example.org");
+    expect(r.firstSeen).toEqual({
+      human: "2 years ago",
+      timestamp: 1700000001,
+      iso: "2023-11-14T22:13:21+00:00",
+    });
+    expect(r.domainAge).toEqual({
+      human: "9 years ago",
+      timestamp: 1500000002,
+      iso: "2017-07-14T02:40:02+00:00",
+    });
+    expect(r.creditsRemaining).toBe(17);
+    expect(r.raw).toBe(fixture);
+    expect(JSON.stringify(r)).toBe(JSON.stringify(fixture));
+  });
+
   it("parses date fields", () => {
     const date = { human: "3 years ago", timestamp: 1600000000, iso: "2020-09-13T12:26:40+00:00" };
     const r = EmailResult.fromData({ first_seen: date, domain_age: "2020-09-13" });
@@ -110,6 +183,58 @@ describe("EmailResult", () => {
 });
 
 describe("PhoneResult", () => {
+  it("maps every field", () => {
+    const fixture = {
+      fraud_score: 47,
+      valid: true,
+      recent_abuse: false,
+      VOIP: true,
+      prepaid: false,
+      risky: true,
+      active: false,
+      do_not_call: true,
+      leaked: false,
+      spammer: true,
+      dialing_code: 44,
+      carrier: "Example Mobile",
+      line_type: "Wireless",
+      country: "GB",
+      region: "England",
+      city: "Leeds",
+      timezone: "Europe/London",
+      zip_code: "LS1 4AP",
+      active_status: "N/A",
+      formatted: "+447700900123",
+      local_format: "07700 900123",
+      extra: "kept",
+    };
+    const r = PhoneResult.fromData(fixture, 23);
+    expect(r.fraudScore).toBe(47);
+    expect(r.valid).toBe(true);
+    expect(r.recentAbuse).toBe(false);
+    expect(r.voip).toBe(true);
+    expect(r.prepaid).toBe(false);
+    expect(r.risky).toBe(true);
+    expect(r.active).toBe(false);
+    expect(r.doNotCall).toBe(true);
+    expect(r.leaked).toBe(false);
+    expect(r.spammer).toBe(true);
+    expect(r.dialingCode).toBe(44);
+    expect(r.carrier).toBe("Example Mobile");
+    expect(r.lineType).toBe("Wireless");
+    expect(r.country).toBe("GB");
+    expect(r.region).toBe("England");
+    expect(r.city).toBe("Leeds");
+    expect(r.timezone).toBe("Europe/London");
+    expect(r.zipCode).toBe("LS1 4AP");
+    expect(r.activeStatus).toBe("N/A");
+    expect(r.formatted).toBe("+447700900123");
+    expect(r.localFormat).toBe("07700 900123");
+    expect(r.creditsRemaining).toBe(23);
+    expect(r.raw).toBe(fixture);
+    expect(JSON.stringify(r)).toBe(JSON.stringify(fixture));
+  });
+
   it("maps VOIP and strings", () => {
     const r = PhoneResult.fromData({ VOIP: true, dialing_code: 1, local_format: "(817) 679-1808" });
     expect(r.voip).toBe(true);
