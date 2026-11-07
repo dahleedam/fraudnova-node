@@ -10,6 +10,7 @@ import {
 import { RetryPolicy } from "../src/retry.js";
 import { Transport, type FetchLike } from "../src/transport.js";
 import { jsonResponse, makeFetch } from "./helpers.js";
+import { VERSION } from "../src/version.js";
 
 const KEY = "fn_test_key_1234567890";
 const OK = { success: true, fraud_score: 10 };
@@ -62,7 +63,9 @@ describe("Transport", () => {
     const headers = headersOf(calls[0].init);
     expect(headers.Accept).toBe("application/json");
     expect(headers.Authorization).toBe(`Bearer ${KEY}`);
-    expect(headers["User-Agent"]).toMatch(/^fraudnova-node\/1\.0\.0 node\/\d+\.\d+\.\d+$/);
+    expect(headers["User-Agent"]).toMatch(
+      new RegExp(`^fraudnova-node/${VERSION.replace(/\./g, "\\.")} node/\\d+\\.\\d+\\.\\d+$`),
+    );
     expect(headers["Content-Type"]).toBeUndefined();
   });
 

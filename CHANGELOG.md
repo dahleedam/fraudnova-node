@@ -5,6 +5,12 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-11-07
+
+### Changed
+
+- No code changes. This is the first version published by the release workflow with an npm provenance attestation; 1.0.0 was published by hand.
+
 ## [1.0.0] - 2026-11-07
 
 ### Added
@@ -16,5 +22,6 @@ All notable changes to this project are documented in this file. The format foll
 - Batch helpers that chunk requests by 100 items
 - Bring-your-own `fetch`
 
-[Unreleased]: https://github.com/dahleedam/fraudnova-node/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/dahleedam/fraudnova-node/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/dahleedam/fraudnova-node/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/dahleedam/fraudnova-node/releases/tag/v1.0.0

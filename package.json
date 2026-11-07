@@ -1,6 +1,6 @@
 {
   "name": "@fraudnova/sdk",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Official Node.js client for the FraudNova fraud-detection API (IP, email and phone checks)",
   "license": "MIT",
   "author": {
