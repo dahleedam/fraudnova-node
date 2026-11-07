@@ -115,8 +115,10 @@ export class Transport {
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), this.#timeout);
       let response: Response;
+      let text: string;
       try {
         response = await this.#fetch(url, { ...init, signal: controller.signal });
+        text = await response.text();
       } catch (error) {
         if (controller.signal.aborted) {
           throw new TransportError(`FraudNova request timed out after ${this.#timeout} ms`, {
@@ -131,7 +133,7 @@ export class Transport {
       }
 
       try {
-        return await Transport.#decode(response);
+        return Transport.#decode(response, text);
       } catch (error) {
         if (!(error instanceof RateLimitError)) throw error;
         const delay = this.#retry?.delayFor(error, attempt) ?? null;
@@ -142,9 +144,8 @@ export class Transport {
     }
   }
 
-  static async #decode(response: Response): Promise<Record<string, unknown>> {
+  static #decode(response: Response, text: string): Record<string, unknown> {
     const status = response.status;
-    const text = await response.text();
     if (status < 200 || status >= 300) {
       throw ApiError.fromResponse(
         status,

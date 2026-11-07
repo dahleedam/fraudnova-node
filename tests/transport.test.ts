@@ -173,6 +173,46 @@ describe("Transport", () => {
     await assertion;
   });
 
+  test("a body read failure is a TransportError", async () => {
+    const original = new Error(`boom ${KEY}`);
+    const body = new ReadableStream<Uint8Array>({
+      start(c) {
+        c.error(original);
+      },
+    });
+    const { fetch } = makeFetch(new Response(body, { status: 200 }));
+    const error: unknown = await transport(fetch)
+      .get("/check")
+      .catch((e: unknown) => e);
+    expect(error).toBeInstanceOf(TransportError);
+    const message = (error as TransportError).message;
+    expect(message.startsWith("FraudNova request failed: ")).toBe(true);
+    expect(message).toContain("fn_…7890");
+    expect(message).not.toContain(KEY);
+    expect((error as TransportError).cause).toBe(original);
+  });
+
+  test("a stalled body is aborted after the timeout", async () => {
+    vi.useFakeTimers();
+    const { fetch } = makeFetch((_url, init) => {
+      const body = new ReadableStream<Uint8Array>({
+        start(c) {
+          init.signal?.addEventListener("abort", () => c.error(init.signal?.reason));
+        },
+      });
+      return new Response(body, { status: 200 });
+    });
+    const assertion = expect(transport(fetch, { timeout: 50 }).get("/check")).rejects.toSatisfy(
+      (error: unknown) =>
+        error instanceof TransportError &&
+        error.message.startsWith("FraudNova request timed out after 50 ms") &&
+        error.cause !== undefined,
+    );
+    await vi.advanceTimersByTimeAsync(60);
+    await assertion;
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
   test("the timeout timer is cleared after a response", async () => {
     vi.useFakeTimers();
     const { fetch } = makeFetch(jsonResponse(200, OK));
